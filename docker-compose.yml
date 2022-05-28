@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+
+    pawse-bot:
+        build:
+            context: .
+        volumes:
+            - ./:/code
+            - /code/node_modules
