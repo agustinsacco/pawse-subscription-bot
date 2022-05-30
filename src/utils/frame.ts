@@ -9,7 +9,6 @@ export const getCheckoutFrame = async (page: Page) => {
     }
 }
 
-
 export const getPaymentIframe = async (frame: Frame) => {
     for (const f of frame.childFrames()) {
         const title = await f.title();

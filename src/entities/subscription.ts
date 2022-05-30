@@ -1,6 +1,5 @@
 export type Subscription = {
     name: string;
-    schedule: string[];
     credentials: {
         email: string;
         password: string;

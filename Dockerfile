@@ -15,4 +15,4 @@ RUN apt-get update && apt-get install curl gnupg -y \
 WORKDIR /code
 COPY . /code
 RUN npm i
-CMD ["npm", "start"]
+CMD ["npm", "run", "start:cron"]
