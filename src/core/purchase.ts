@@ -101,7 +101,7 @@ export class PawsePurchase {
         try {
             console.log('Checkout process started...');
             await page.goto('https://boutique.pawse.ca/en/checkouts/');
-            await wait(7);
+            await wait(15);
 
             await this.takeScreenshot(page, 'checkout-process-1.png');
 
@@ -112,15 +112,15 @@ export class PawsePurchase {
                 throw new CheckoutContextError('Main checkout iframe not found.');
             }
 
-            await wait(10);
+            await wait(15);
             // Set delivery shipping
             await checkoutFrame.click('[data-testid="external|liquid-delivery|delivery_schedule_1070_148"]');
-            await wait(1);
+            await wait(5);
             await checkoutFrame.click('section[data-testid="shippingMethod"] button');
 
             await this.takeScreenshot(page, 'checkout-process-2.png');
 
-            await wait(2);
+            await wait(5);
 
             // Open credit card form
             await checkoutFrame.click('[data-testid="lightspeedpayments-creditcard"]');
@@ -155,9 +155,8 @@ export class PawsePurchase {
             }
             await cvcInputHandle.type(this.subscription.creditCard.cvc, { delay: 20 });
 
-            await wait(1);
             await this.takeScreenshot(page, 'checkout-process-3.png');
-            await wait(1);
+            await wait(2);
 
             console.log('Checkout submit process started...');
 
@@ -175,7 +174,7 @@ export class PawsePurchase {
 
         } catch (err) {
             await this.takeScreenshot(page, 'checkout-process-error.png');
-            throw new CartContextError('Could not checkout');
+            throw err;
         }
     }
 
