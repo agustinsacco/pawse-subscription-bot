@@ -61,6 +61,7 @@ export class PawsePurchase {
             await wait(2);
             await this.takeScreenshot(page, 'login-process.png');
         } catch (err) {
+            await this.takeScreenshot(page, 'login-process-error.png');
             throw new LoginContextError('Could not login');
         }
     }
@@ -85,6 +86,7 @@ export class PawsePurchase {
             }
             await this.takeScreenshot(page, 'cart-process.png');
         } catch (err) {
+            await this.takeScreenshot(page, 'cart-process-error.png');
             throw new CartContextError('Could not add items to cart')
         }
     }
@@ -172,7 +174,8 @@ export class PawsePurchase {
             console.log('Checkout submit process complete...');
 
         } catch (err) {
-            throw new CartContextError('Could not add items to cart')
+            await this.takeScreenshot(page, 'checkout-process-error.png');
+            throw new CartContextError('Could not checkout');
         }
     }
 

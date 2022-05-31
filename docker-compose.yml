@@ -5,6 +5,7 @@ services:
     pawse-bot:
         build:
             context: .
+        command: npm run start:cron
         volumes:
             - ./:/code
             - /code/node_modules
