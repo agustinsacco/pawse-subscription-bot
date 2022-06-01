@@ -1,4 +1,4 @@
-import config from 'config';
+import config from '../../config.json';
 import fs from 'fs';
 import { google } from 'googleapis';
 import readline from 'readline'
@@ -85,7 +85,7 @@ export class Calendar {
                 this.authorize(JSON.parse(content), (auth: any) => {
                     const calendar = google.calendar({ version: 'v3', auth });
                     const options = {
-                        calendarId: config.get<string>('calendarId'),
+                        calendarId: config.calendarId,
                         maxResults: maxResults,
                         timeMin: timeMin,
                         timeMax: timeMax,
@@ -100,16 +100,16 @@ export class Calendar {
                         if (res?.data?.items) {
                             resolve(res.data.items.filter((event: Event) => {
                                 const timeMinLocal = new Date((new Date(timeMin)).toLocaleString('en-US', {
-                                    timeZone: config.get<string>('timezone')
+                                    timeZone: config.timezone
                                 }));
                                 const startTimeLocal = new Date((new Date(event.start.dateTime)).toLocaleString('en-US', {
-                                    timeZone: config.get<string>('timezone')
+                                    timeZone: config.timezone
                                 }));
                                 const timeMaxLocal = new Date((new Date(timeMax)).toLocaleString('en-US', {
-                                    timeZone: config.get<string>('timezone')
+                                    timeZone: config.timezone
                                 }));
                                 const endTimeLocal = new Date((new Date(event.end.dateTime)).toLocaleString('en-US', {
-                                    timeZone: config.get<string>('timezone')
+                                    timeZone: config.timezone
                                 }));
                                 
                                 if (startTimeLocal >= timeMinLocal &&
@@ -137,7 +137,7 @@ export class Calendar {
                 this.authorize(JSON.parse(content), (auth: any) => {
                     const calendar = google.calendar({ version: 'v3', auth });
                     calendar.events.patch({
-                        calendarId: config.get<string>('calendarId'),
+                        calendarId: config.calendarId,
                         eventId: id,
                         requestBody: {
                             description: description

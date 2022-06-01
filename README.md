@@ -18,31 +18,10 @@ This will also display the current calendars in the account. Find the calendar y
 
 ### Setup Configs
 
-Configs are located: ```./config/default.js```
+Create a ```config.json``` at the root from ```config.sample.json```. 
 
 1. Configure your calendar ID and timezone.
-2. Configure your subscriptions. Example below.
-
-```
-{
-    credentials: {
-        email: 'test@hotmail.com',
-        password: 'test123'
-    },
-    creditCard: {
-        cardNumber: '1234123412341234',
-        expiry: '0725',
-        cvc: '123'
-    },
-    name: 'Bingo Subscription',   
-    products: [
-        {
-            url: 'https://boutique.pawse.ca/en/karnivor-chicken.html',
-            quantity: 1
-        },
-    ],
-}
-```
+2. Configure your subscriptions.
 
 Considerations:
 * Multiple events can run in the same hour. Each order will be done in sequence.

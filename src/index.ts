@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import config from 'config';
+import config from '../config.json';
 import { PawsePurchase } from './core/purchase';
 import { Calendar } from './core/calendar';
 import { Subscription } from './entities/subscription';
@@ -32,7 +32,7 @@ const check = async () => {
     // Run 
     for (const event of events) {
         // Find a subscription for this event
-        const subscription = config.get<Subscription[]>('subscriptions').find((s: Subscription) => {
+        const subscription = config.subscriptions.find((s: Subscription) => {
             return s.name === event.summary;
         });
 

@@ -208,7 +208,10 @@ export class PawsePurchase {
     private async takeScreenshot(page: Page, filename: string): Promise<void> {
         try {
             if (this.screenshotsEnabled) {
-                await page.screenshot({ path: `./screenshots/${filename}` });
+                await page.screenshot({ 
+                    path: `./screenshots/${filename}` ,
+                    fullPage: true
+                });
             }
         } catch (err) {
             console.log('error taking screenshot', err)
