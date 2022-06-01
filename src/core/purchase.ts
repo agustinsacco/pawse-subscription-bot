@@ -124,7 +124,7 @@ export class PawsePurchase {
 
             // Open credit card form
             await checkoutFrame.click('[data-testid="lightspeedpayments-creditcard"]');
-            await wait(5);
+            await wait(15);
 
             // Get payment frame
             const paymentFrame = await getPaymentIframe(checkoutFrame);
