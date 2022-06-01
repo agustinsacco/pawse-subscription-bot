@@ -129,9 +129,11 @@ export class PawsePurchase {
             // Get payment frame
             const paymentFrame = await getPaymentIframe(checkoutFrame);
             if (!paymentFrame) {
-                throw new CheckoutContextError('Check payment frame within checkout frame was not found.');
+                throw new CheckoutContextError('Payment frame within checkout frame was not found.');
 
             }
+
+            await wait(5);
 
             // Credit card
             const creditCardInputHandle = await getInputInFrame(paymentFrame, 'cardnumber');
