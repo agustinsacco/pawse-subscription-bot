@@ -11,6 +11,7 @@ export class PawsePurchase {
     private subscription: Subscription;
     private screenshotsEnabled: boolean = true;
     private headless: boolean = true;
+    private logsEnabled: boolean = false;
 
     constructor(subscription: Subscription) {
         this.subscription = subscription;
@@ -25,18 +26,31 @@ export class PawsePurchase {
     private async createContext(): Promise<{ browser: Browser, page: Page }> {
         try {
             const browser = await puppeteer.launch({
-                executablePath: '/usr/bin/chromium',
+                executablePath: '/usr/bin/google-chrome',
                 headless: this.headless,
                 defaultViewport: null,
                 args: [
-                    '--no-sandbox'
+                    '--no-sandbox',
                 ]
             });
 
             const context = await browser.createIncognitoBrowserContext();
             const page = await context.newPage();
-            return { browser, page }
+
+            // Log errors on console
+            if (this.logsEnabled) {
+                page
+                    .on('console', message =>
+                        console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`))
+                    .on('pageerror', ({ message }) => console.log(message))
+                    .on('requestfailed', request =>
+                        console.log(`${request.failure().errorText} ${request.url()}`))
+            }
+
+
+            return { browser, page };
         } catch (err) {
+            console.log(err)
             throw new CreateContextError('Cloud not create browser context');
         }
     }
@@ -101,7 +115,7 @@ export class PawsePurchase {
         try {
             console.log('Checkout process started...');
             await page.goto('https://boutique.pawse.ca/en/checkouts/');
-            await wait(15);
+            await wait(5);
 
             await this.takeScreenshot(page, 'checkout-process-1.png');
 
@@ -112,30 +126,32 @@ export class PawsePurchase {
                 throw new CheckoutContextError('Main checkout iframe not found.');
             }
 
-            await wait(15);
+            await wait(8);
             // Set delivery shipping
             await checkoutFrame.click('[data-testid="external|liquid-delivery|delivery_schedule_1070_148"]');
             await wait(5);
             await checkoutFrame.click('section[data-testid="shippingMethod"] button');
 
+            console.log('Set shipping method as delivery...');
+
             await this.takeScreenshot(page, 'checkout-process-2.png');
 
-            await wait(5);
+            await wait(3);
 
             // Open credit card form
             await checkoutFrame.click('[data-testid="lightspeedpayments-creditcard"]');
-            await wait(30);
-            await this.takeScreenshot(page, 'checkout-frame.png');
+            console.log('Clicked credit card payment option...');
 
+            await wait(5);
             // Get payment frame
             const paymentFrame = await getPaymentIframe(checkoutFrame);
             if (!paymentFrame) {
                 throw new CheckoutContextError('Payment frame within checkout frame was not found.');
-
             }
 
-            await wait(5);
+            console.log('Clicked credit card payment frame opened. Entering data...');
 
+            await wait(6);
             // Credit card
             const creditCardInputHandle = await getInputInFrame(paymentFrame, 'cardnumber');
             if (!creditCardInputHandle) {
@@ -211,8 +227,8 @@ export class PawsePurchase {
     private async takeScreenshot(page: Page, filename: string): Promise<void> {
         try {
             if (this.screenshotsEnabled) {
-                await page.screenshot({ 
-                    path: `./screenshots/${filename}` ,
+                await page.screenshot({
+                    path: `./screenshots/${filename}`,
                     fullPage: true
                 });
             }

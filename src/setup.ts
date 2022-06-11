@@ -1,7 +1,11 @@
 import { Calendar } from './core/calendar';
 
 (async () => {
-    const calendar = new Calendar();
-    const calendars = await calendar.listCalendars();
-    console.log(calendars);
+    try {
+        const calendar = new Calendar();
+        const calendars = await calendar.listCalendars();
+        console.log(calendars);
+    } catch (err) {
+        console.log(err);
+    }
 })();

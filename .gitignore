@@ -2,3 +2,4 @@ node_modules
 screenshots
 credentials.json
 config.json
+token.json
