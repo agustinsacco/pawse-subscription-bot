@@ -9,20 +9,16 @@ import { wait } from '../utils/wait';
 
 export class PawsePurchase {
     private subscription: Subscription;
+    private couponCode: string;
     private screenshotsEnabled: boolean = true;
-    private headless: boolean = true;
+    private headless: boolean = false;
     private logsEnabled: boolean = false;
 
-    constructor(subscription: Subscription) {
+    constructor(subscription: Subscription, couponCode: string) {
         this.subscription = subscription;
+        this.couponCode = couponCode;
     }
 
-    @retry({
-        retries: 2,
-        onRetry: (error: any, attempt: any) => {
-            console.log(`Retry (${attempt}) on error within createContext`, error.message);
-        },
-    })
     private async createContext(): Promise<{ browser: Browser, page: Page }> {
         try {
             const browser = await puppeteer.launch({
@@ -55,12 +51,6 @@ export class PawsePurchase {
         }
     }
 
-    @retry({
-        retries: 2,
-        onRetry: (error: any, attempt: any) => {
-            console.log(`Retry (${attempt}) on error within runLogin`, error.message);
-        },
-    })
     private async runLogin(page: Page): Promise<void> {
         try {
             console.log('Login process started...');
@@ -80,14 +70,20 @@ export class PawsePurchase {
         }
     }
 
-    @retry({
-        retries: 2,
-        onRetry: (error: any, attempt: any) => {
-            console.log(`Retry (${attempt}) on error within runCart`, error.message);
-        },
-    })
     private async runCart(page: Page): Promise<void> {
         try {
+            // First lets clear the cart
+            // Search for first element to remove items from cart
+            let removeBtns = await page.$$('.gui-action-delete');
+            // Keep removing first item until removeBtns is null (after last render)
+            while (removeBtns && removeBtns.length > 0) { 
+                // Click first item to remove from cart
+                await removeBtns[0].click();
+                await page.waitForNavigation({waitUntil: 'networkidle2'});
+                // Find buttons again
+                removeBtns = await page.$$('.gui-action-delete');
+            }
+
             for (const product of this.subscription.products) {
                 // Navigate to page
                 await page.goto(product.url);
@@ -100,17 +96,12 @@ export class PawsePurchase {
             }
             await this.takeScreenshot(page, 'cart-process.png');
         } catch (err) {
-            await this.takeScreenshot(page, 'cart-process-error.png');
+            // await this.takeScreenshot(page, 'cart-process-error.png');
+            console.log(err);
             throw new CartContextError('Could not add items to cart')
         }
     }
 
-    @retry({
-        retries: 2,
-        onRetry: (error: any, attempt: any) => {
-            console.log(`Retry (${attempt}) on error within runCheckout`, error.message);
-        },
-    })
     private async runCheckout(page: Page): Promise<void> {
         try {
             console.log('Checkout process started...');
@@ -126,7 +117,18 @@ export class PawsePurchase {
                 throw new CheckoutContextError('Main checkout iframe not found.');
             }
 
-            await wait(8);
+            await wait(5);
+
+            // Add coupon code
+            // Find coupon code dropdown link by xpath
+            const couponDropdownBtn = await checkoutFrame.$x("//h4[contains(text(), 'Add a discount code or gift card')]");
+            await couponDropdownBtn[0].click();
+            await checkoutFrame.type('aside input[placeholder="Enter discount code"]', this.couponCode, { delay: 20 });
+            await checkoutFrame.click('aside button[type="button"]');
+
+            console.log('done clicking coupon shit')
+            await wait(5);
+
             // Set delivery shipping
             await checkoutFrame.click('[data-testid="external|liquid-delivery|delivery_schedule_1070_148"]');
             await wait(5);
@@ -198,6 +200,12 @@ export class PawsePurchase {
     }
 
 
+    @retry({
+        retries: 0,
+        onRetry: (error: any, attempt: any) => {
+            console.log(`Retry (${attempt}) on error running purchase. Retrying now`, error.message);
+        },
+    })
     public async run(): Promise<void> {
         let browser: Browser = null;
         let page: Page = null;
