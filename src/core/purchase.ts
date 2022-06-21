@@ -34,6 +34,11 @@ export class PawsePurchase {
             const context = await browser.createIncognitoBrowserContext();
             const page = await context.newPage();
 
+            const deviceWidth = 1920;
+            const deviceHeight = 1080;
+            await page.setViewport({width: deviceWidth, height: deviceHeight})
+            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36');        
+
             // Log errors on console
             if (this.logsEnabled) {
                 page
@@ -43,7 +48,6 @@ export class PawsePurchase {
                     .on('requestfailed', request =>
                         console.log(`${request.failure().errorText} ${request.url()}`))
             }
-
 
             return { browser, page };
         } catch (err) {
@@ -123,7 +127,6 @@ export class PawsePurchase {
             // Add coupon code
             // Find coupon code dropdown link by xpath
             const couponDropdownBtn = await checkoutFrame.$x("//h4[contains(text(), 'Add a discount code or gift card')]");
-            console.log(couponDropdownBtn);
             await couponDropdownBtn[0].click();
             await checkoutFrame.type('aside input[placeholder="Enter discount code"]', this.couponCode, { delay: 20 });
             await checkoutFrame.click('aside button[type="button"]');
