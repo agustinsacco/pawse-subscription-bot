@@ -40,7 +40,7 @@ const check = async () => {
             console.log(`-------------- Event and subscription "${subscription.name}" found, starting purchase. -------------`)
             // Run purchase 
             try {
-                const purchase = new PawsePurchase(subscription);
+                const purchase = new PawsePurchase(subscription, config.couponCode);
                 await purchase.run();
                 const msg = `Subscription "${subscription.name}" has ran successfully`;
                 console.log(msg);
