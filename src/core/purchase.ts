@@ -11,7 +11,7 @@ export class PawsePurchase {
     private subscription: Subscription;
     private couponCode: string;
     private screenshotsEnabled: boolean = true;
-    private headless: boolean = false;
+    private headless: boolean = true;
     private logsEnabled: boolean = false;
 
     constructor(subscription: Subscription, couponCode: string) {
@@ -27,6 +27,7 @@ export class PawsePurchase {
                 defaultViewport: null,
                 args: [
                     '--no-sandbox',
+                    '--start-fullscreen'
                 ]
             });
 
@@ -76,10 +77,10 @@ export class PawsePurchase {
             // Search for first element to remove items from cart
             let removeBtns = await page.$$('.gui-action-delete');
             // Keep removing first item until removeBtns is null (after last render)
-            while (removeBtns && removeBtns.length > 0) { 
+            while (removeBtns && removeBtns.length > 0) {
                 // Click first item to remove from cart
                 await removeBtns[0].click();
-                await page.waitForNavigation({waitUntil: 'networkidle2'});
+                await page.waitForNavigation({ waitUntil: 'networkidle2' });
                 // Find buttons again
                 removeBtns = await page.$$('.gui-action-delete');
             }
@@ -117,25 +118,28 @@ export class PawsePurchase {
                 throw new CheckoutContextError('Main checkout iframe not found.');
             }
 
-            await wait(5);
+            await wait(10);
 
             // Add coupon code
             // Find coupon code dropdown link by xpath
             const couponDropdownBtn = await checkoutFrame.$x("//h4[contains(text(), 'Add a discount code or gift card')]");
+            console.log(couponDropdownBtn);
             await couponDropdownBtn[0].click();
             await checkoutFrame.type('aside input[placeholder="Enter discount code"]', this.couponCode, { delay: 20 });
             await checkoutFrame.click('aside button[type="button"]');
 
-            console.log('done clicking coupon shit')
             await wait(5);
 
             // Set delivery shipping
-            await checkoutFrame.click('[data-testid="external|liquid-delivery|delivery_schedule_1070_148"]');
-            await wait(5);
-            await checkoutFrame.click('section[data-testid="shippingMethod"] button');
-
+            // First check if delivery is already pre-set
+            let deliveryOption = await page.$$('[data-testid="external|liquid-delivery|delivery_schedule_1070_148"]');
+            if (!deliveryOption) {
+                console.log('delivery option does not exist, must alread be set');
+                await checkoutFrame.click('[data-testid="external|liquid-delivery|delivery_schedule_1070_148"]');
+                await wait(5);
+                await checkoutFrame.click('section[data-testid="shippingMethod"] button');
+            }
             console.log('Set shipping method as delivery...');
-
             await this.takeScreenshot(page, 'checkout-process-2.png');
 
             await wait(3);
